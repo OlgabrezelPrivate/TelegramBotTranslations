@@ -10,10 +10,14 @@
     <PackageProjectUrl>https://github.com/Olgabrezel/TelegramBotTranslations</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Olgabrezel/TelegramBotTranslations</RepositoryUrl>
     <PackageTags>Telegram Bot Translation TelegramBot Locales</PackageTags>
-    <PackageReleaseNotes>Made the library compatible with .NET Standard :)</PackageReleaseNotes>
+    <PackageReleaseNotes>Made the library compatible with .NET Standard
+Removed references to Telegram.Bot once again
+Found my old code again and made it work again
+
+This should hopefully work as expected now. Taking bad versions 3.0.0 and 3.1.0 down.</PackageReleaseNotes>
     <Copyright></Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Description>I found my old code again and made it work again. *tried noises*</Description>
+    <Description>An easy way to make telegram bot translatable.</Description>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

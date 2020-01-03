@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+using System.Net.Http;
 using Newtonsoft.Json;
 
 namespace TelegramBotTranslations
@@ -13,12 +15,10 @@ namespace TelegramBotTranslations
 
         public void DownloadFile(string FileId, string DestinationPath)
         {
-            if (System.IO.File.Exists(DestinationPath)) System.IO.File.Delete(DestinationPath);
-
-            using (var webclient = new System.Net.WebClient())
+            using (var httpclient = new HttpClient())
             {
                 string uri = $"https://api.telegram.org/bot{Token}/getFile?file_id={FileId}";
-                string str = webclient.DownloadString(new Uri(uri));
+                string str = httpclient.GetAsync(uri).Result.Content.ReadAsStringAsync().Result;
 
                 var file = JsonConvert.DeserializeObject<TGFileResponse>(str);
 
@@ -28,7 +28,13 @@ namespace TelegramBotTranslations
                 }
 
                 uri = $"https://api.telegram.org/file/bot{Token}/{file.Result.FilePath}";
-                webclient.DownloadFile(uri, DestinationPath);
+                var stream = httpclient.GetStreamAsync(uri).Result;
+                stream.Seek(0, SeekOrigin.Begin);
+
+                using (var filestream = File.Create(DestinationPath))
+                {
+                    stream.CopyTo(filestream);
+                }
             }
         }
 

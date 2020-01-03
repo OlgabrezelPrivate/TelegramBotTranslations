@@ -8,32 +8,6 @@ using System.Xml.Linq;
 
 namespace TelegramBotTranslations
 {
-    internal class LangFile
-    {
-        public string Base { get; set; }
-        public string Variant { get; set; }
-        public string FileName { get; set; }
-        public XDocument Doc { get; set; }
-        public DateTime LatestUpdate { get; }
-
-        public LangFile(string path)
-        {
-            Doc = XDocument.Load(path);
-            Base = Doc.Descendants("language").First().Attribute("base")?.Value;
-            Variant = Doc.Descendants("language").First().Attribute("variant")?.Value;
-            FileName = Path.GetFileNameWithoutExtension(path);
-            LatestUpdate = File.GetLastWriteTimeUtc(path);
-        }
-
-        public LangFile(string xmlName, XDocument xmlDoc, string tempPath)
-        {
-            Doc = xmlDoc;
-            Base = Doc.Descendants("language").First().Attribute("base")?.Value;
-            Variant = Doc.Descendants("language").First().Attribute("variant")?.Value;
-            FileName = xmlName;
-            LatestUpdate = File.GetLastWriteTimeUtc(Path.Combine(tempPath, xmlName, ".xml"));
-        }
-    }
 
     internal class LanguageError
     {

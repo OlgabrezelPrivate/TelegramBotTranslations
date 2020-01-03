@@ -7,8 +7,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
+using TelegramBotTranslations.Models;
+using File = TelegramBotTranslations.Models.File;
 
 namespace TelegramBotTranslations
 {
@@ -17,21 +17,21 @@ namespace TelegramBotTranslations
         /// <summary>
         /// Downloads the file to the temporary language folder and validates it against the current master file.
         /// </summary>
-        /// <param name="document">The document message containing the file that should be uploaded.</param>
+        /// <param name="FileId"></param>
+        /// <param name="FileName"></param>
+        /// <param name="CanUpload"></param>
         /// <returns>Returns a string with the validation results, the given parse mode will be applied to it.</returns>
-        public string PrepareUploadLanguage(Document document)
+        public string PrepareUploadLanguage(string FileId, string FileName, out bool CanUpload)
         {
-            if (document == null) throw new ArgumentNullException("document");
+            if (FileId == null) throw new ArgumentNullException(nameof(FileId));
+            if (FileName == null) throw new ArgumentNullException(nameof(FileName));
 
-            var fileid = document.FileId;
-            var filename = document.FileName;
+            CanUpload = true;
 
-            var fileT = Api.GetFileAsync(fileid);
-            fileT.Wait();
-            var file = fileT.Result;
-
+            var file = File.GetFile(BotToken, FileId);
+            
             var uri = $"https://api.telegram.org/file/bot{BotToken}/{file.FilePath}";
-            var newFilePath = Path.Combine(TempPath, filename);
+            var newFilePath = Path.Combine(TempPath, FileName);
             using (var client = new WebClient())
             {
                 client.DownloadFile(new Uri(uri), newFilePath);
@@ -43,9 +43,9 @@ namespace TelegramBotTranslations
             //first, reload existing files to program
             ReloadLanguages();
 
-            var langs = Languages.Select(x => new LangFile(x.Key, x.Value, TempPath));
+            var langs = Languages.Select(x => x.Value);
             var master = Master;
-            var newFile = new LangFile(newFilePath);
+            var newFile = new Language(newFilePath);
 
             //make sure it has a complete langnode
             CheckLanguageNode(newFile, newFileErrors);
@@ -68,6 +68,12 @@ namespace TelegramBotTranslations
             //get the errors in it
             GetFileErrors(newFile, newFileErrors, master);
 
+            if (newFileErrors.Any(x => x.Level == ErrorLevel.FatalError) ||
+                (StrictErrors && newFileErrors.Any(x => x.Level == ErrorLevel.Error)))
+            {
+                CanUpload = false;
+            }
+
             //need to get the current file
             var curFile = langs.FirstOrDefault(x => x.FileName == newFile.FileName);
             var curFileErrors = new List<LanguageError>();
@@ -82,11 +88,11 @@ namespace TelegramBotTranslations
             }
 
             //return the validation result
-            return OutputResult(newFile, newFileErrors, curFile, curFileErrors);
+            return OutputResult(newFile, newFileErrors, curFile, curFileErrors, CanUpload, Parsemode);
         }
 
         /// <summary>
-        /// Upload a language. The language must have been prepared with <see cref="PrepareUploadLanguage(Document)"/> before.
+        /// Upload a language. The language must have been prepared with <see cref="PrepareUploadLanguage(string, string, out bool)"/> before.
         /// </summary>
         /// <param name="fileName">The language to be uploaded.</param>
         /// <returns>Returns a message about the status of the uploading, in the given parse mode.</returns>
@@ -110,7 +116,7 @@ namespace TelegramBotTranslations
                 };
 
                 //check for existing file
-                var langs = Directory.GetFiles(FilesPath).Select(x => new LangFile(x)).ToList();
+                var langs = Directory.GetFiles(FilesPath).Select(x => new Language(x)).ToList();
                 var lang = langs.FirstOrDefault(x => x.FileName == fileName);
                 if (lang != null)
                 {

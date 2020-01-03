@@ -68,7 +68,15 @@
             <param name="arguments">The arguments that the string will be formatted with. Every {#} inside the string will be replaced by arguments[#]</param>
             <returns></returns>
         </member>
-        <member name="M:TelegramBotTranslations.BotTranslationManager.#ctor(System.String,System.String,System.String,System.String,Telegram.Bot.Types.Enums.ParseMode)">
+        <member name="M:TelegramBotTranslations.BotTranslationManager.GetRawString(System.String,System.String)">
+            <summary>
+            Get an unformatted string, without any arguments. The {#}'s will be as they are in the XML file.
+            </summary>
+            <param name="key">The key of the string to get.</param>
+            <param name="language">The language to get the key in.</param>
+            <returns>the unformatted string, without any arguments. The {#}'s will be as they are in the XML file</returns>
+        </member>
+        <member name="M:TelegramBotTranslations.BotTranslationManager.#ctor(System.String,System.String,System.String,System.String,TelegramBotTranslations.Models.ParseMode,System.Boolean)">
             <summary>
             Create a new manager for translations.
             </summary>
@@ -77,22 +85,45 @@
             <param name="tempPath">The path to save the temporary files to. Must be an existing directory the program has read and write access to.</param>
             <param name="masterFileName">Name of the master file (without file extension!). If a string is missing or cannot be formatted in a translation, the corresponding string from the master file will be used instead, and when uploading a language, it's validated against the current master file.</param>
             <param name="parsemode">The parse mode that your bot sends messages with. Methods that return strings for your bot to send will give the strings in this parse mode.</param>
+            <param name="strictErrors">Whether missing or extra {#}'s in a string should make the bot disallow the upload.</param>
         </member>
         <member name="M:TelegramBotTranslations.BotTranslationManager.ReloadLanguages">
             <summary>
-            Update the language files from the directory. Can be called after manual changes to the directory, doesn't need to be called after uploading a file through the <see cref="M:TelegramBotTranslations.BotTranslationManager.PrepareUploadLanguage(Telegram.Bot.Types.Document)"/> and <see cref="M:TelegramBotTranslations.BotTranslationManager.UploadLanguage(System.String)"/> methods.
+            Update the language files from the directory. Can be called after manual changes to the directory, doesn't need to be called after uploading a file through the <see cref="M:TelegramBotTranslations.BotTranslationManager.PrepareUploadLanguage(System.String,System.String,System.Boolean@)"/> and <see cref="M:TelegramBotTranslations.BotTranslationManager.UploadLanguage(System.String)"/> methods.
             </summary>
         </member>
-        <member name="M:TelegramBotTranslations.BotTranslationManager.PrepareUploadLanguage(Telegram.Bot.Types.Document)">
+        <member name="M:TelegramBotTranslations.BotTranslationManager.GetLanguage(System.String)">
+            <summary>
+            Get the Language file with the given file name
+            </summary>
+            <param name="fileName">The file name of the language file to get</param>
+            <returns>the language file with this file name</returns>
+        </member>
+        <member name="M:TelegramBotTranslations.BotTranslationManager.GetLanguageBases">
+            <summary>
+            Get a list of all currently available language bases
+            </summary>
+            <returns>a list of all currently available language bases</returns>
+        </member>
+        <member name="M:TelegramBotTranslations.BotTranslationManager.GetLanguageVariants(System.String)">
+            <summary>
+            Get a list of all variants. If <paramref name="languageBase"/> is specified, only variants of that base will be returned.
+            </summary>
+            <param name="languageBase">The base to search languages. If this is null, all languages will be returned.</param>
+            <returns>A list of all variants. If <paramref name="languageBase"/> is specified, only variants of that base will be returned.</returns>
+        </member>
+        <member name="M:TelegramBotTranslations.BotTranslationManager.PrepareUploadLanguage(System.String,System.String,System.Boolean@)">
             <summary>
             Downloads the file to the temporary language folder and validates it against the current master file.
             </summary>
-            <param name="document">The document message containing the file that should be uploaded.</param>
+            <param name="FileId"></param>
+            <param name="FileName"></param>
+            <param name="CanUpload"></param>
             <returns>Returns a string with the validation results, the given parse mode will be applied to it.</returns>
         </member>
         <member name="M:TelegramBotTranslations.BotTranslationManager.UploadLanguage(System.String)">
             <summary>
-            Upload a language. The language must have been prepared with <see cref="M:TelegramBotTranslations.BotTranslationManager.PrepareUploadLanguage(Telegram.Bot.Types.Document)"/> before.
+            Upload a language. The language must have been prepared with <see cref="M:TelegramBotTranslations.BotTranslationManager.PrepareUploadLanguage(System.String,System.String,System.Boolean@)"/> before.
             </summary>
             <param name="fileName">The language to be uploaded.</param>
             <returns>Returns a message about the status of the uploading, in the given parse mode.</returns>
@@ -103,6 +134,51 @@
             </summary>
             <param name="language">The language file to be validated.</param>
             <returns>Returns the validation results in the given parse mode.</returns>
+        </member>
+        <member name="T:TelegramBotTranslations.Models.Language">
+            <summary>
+            Represents a language file
+            </summary>
+        </member>
+        <member name="P:TelegramBotTranslations.Models.Language.Base">
+            <summary>
+            The language's base as in the XML file
+            </summary>
+        </member>
+        <member name="P:TelegramBotTranslations.Models.Language.Variant">
+            <summary>
+            The language's variant as in the XML file
+            </summary>
+        </member>
+        <member name="P:TelegramBotTranslations.Models.Language.FileName">
+            <summary>
+            The file name of the XML file
+            </summary>
+        </member>
+        <member name="P:TelegramBotTranslations.Models.Language.LatestUpdate">
+            <summary>
+            The time when the language file was updated the last time
+            </summary>
+        </member>
+        <member name="T:TelegramBotTranslations.Models.ParseMode">
+            <summary>
+            The ParseMode that you use for sending messages
+            </summary>
+        </member>
+        <member name="F:TelegramBotTranslations.Models.ParseMode.Default">
+            <summary>
+            No parse mode at all
+            </summary>
+        </member>
+        <member name="F:TelegramBotTranslations.Models.ParseMode.Markdown">
+            <summary>
+            ParseMode "markdown" or "MarkdownV2"
+            </summary>
+        </member>
+        <member name="F:TelegramBotTranslations.Models.ParseMode.Html">
+            <summary>
+            ParseMode "html"
+            </summary>
         </member>
     </members>
 </doc>

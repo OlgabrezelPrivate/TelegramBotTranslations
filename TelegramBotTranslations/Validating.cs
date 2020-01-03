@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using TelegramBotTranslations.Models;
 
 namespace TelegramBotTranslations
 {
@@ -21,9 +22,9 @@ namespace TelegramBotTranslations
 
             var fileErrors = new List<LanguageError>();
             ReloadLanguages();
-            var langs = Languages.Select(x => new LangFile(x.Key, x.Value, TempPath));
+            var langs = Languages.Select(x => x.Value);
             var master = Master;
-            var file = new LangFile(newFilePath);
+            var file = new Language(newFilePath);
 
             CheckLanguageNode(file, fileErrors);
             TestLength(file, fileErrors);
@@ -43,7 +44,7 @@ namespace TelegramBotTranslations
             return OutputResult(file, fileErrors);
         }
 
-        private void CheckLanguageNode(LangFile langfile, List<LanguageError> errors)
+        private void CheckLanguageNode(Language langfile, List<LanguageError> errors)
         {
             if (String.IsNullOrWhiteSpace(langfile.Base))
                 errors.Add(new LanguageError(langfile.FileName, "Language Node".ToBold(Parsemode), "Base is missing", ErrorLevel.FatalError));
@@ -51,7 +52,7 @@ namespace TelegramBotTranslations
                 errors.Add(new LanguageError(langfile.FileName, "Language Node".ToBold(Parsemode), "Variant is missing", ErrorLevel.FatalError));
         }
 
-        private void TestLength(LangFile file, List<LanguageError> fileErrors)
+        private void TestLength(Language file, List<LanguageError> fileErrors)
         {
             var test = $"testing|-1001234567890|{file.Base ?? ""}|{file.Variant ?? ""}|t";
             var count = Encoding.UTF8.GetByteCount(test);
@@ -59,7 +60,7 @@ namespace TelegramBotTranslations
                 fileErrors.Add(new LanguageError(file.FileName, "Language Node".ToBold(Parsemode), "Base and variant are too long.", ErrorLevel.FatalError));
         }
 
-        private void GetFileErrors(LangFile file, List<LanguageError> fileErrors, XDocument master)
+        private void GetFileErrors(Language file, List<LanguageError> fileErrors, XDocument master)
         {
             var masterStrings = master.Descendants("string");
 
@@ -107,7 +108,7 @@ namespace TelegramBotTranslations
             }
         }
 
-        private string OutputResult(LangFile newFile, List<LanguageError> newFileErrors, LangFile curFile, List<LanguageError> curFileErrors)
+        private string OutputResult(Language newFile, List<LanguageError> newFileErrors, Language curFile, List<LanguageError> curFileErrors, bool canUpload, ParseMode parseMode)
         {
             var result = "NEW FILE\n" + $"{newFile.FileName}.xml - ({(newFile.Base ?? "") + " " + (newFile.Variant ?? "")})".ToBold(Parsemode) + "\n";
 
@@ -143,15 +144,17 @@ namespace TelegramBotTranslations
                 result += "\n\n" + "No old file, this is a new language".ToBold(Parsemode);
                 result += "\nPlease double check the filename, and the language base and variant, as you won't be able to change them.";
                 result += $"\n" + "Base:".ToItalic(Parsemode) + $" {newFile.Base ?? ""}";
-                if (!Directory.GetFiles(FilesPath, "*.xml").Select(x => new LangFile(x)).Any(x => x.Base == newFile.Base))
+                if (!Directory.GetFiles(FilesPath, "*.xml").Select(x => new Language(x)).Any(x => x.Base == newFile.Base))
                     result += " " + "(NEW)".ToBold(Parsemode);
                 result += $"\n" + "Variant:".ToItalic(Parsemode) + $" {newFile.Variant ?? ""}";
             }
 
+            if (!canUpload) result += $"\n\n{"Fatal errors present, can't upload!".ToBold(parseMode)}";
+
             return result;
         }
 
-        private string OutputResult(LangFile file, List<LanguageError> fileErrors)
+        private string OutputResult(Language file, List<LanguageError> fileErrors)
         {
             var result = $"{file.FileName}.xml - ({(file.Base ?? "") + " " + (file.Variant ?? "")})".ToBold(Parsemode) + "\n";
 

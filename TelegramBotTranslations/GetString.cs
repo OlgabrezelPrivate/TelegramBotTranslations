@@ -19,7 +19,7 @@ namespace TelegramBotTranslations
         /// <returns></returns>
         public string GetTranslation(string key, string language, params object[] arguments)
         {
-            var lang = Languages.FirstOrDefault(x => x.Key == language).Value ?? Master;
+            var lang = Languages.FirstOrDefault(x => x.Key == language).Value.Doc ?? Master;
 
             var str = lang.Descendants("string").FirstOrDefault(x => x.Attribute("key").Value == key)
                 ?? Master.Descendants("string").FirstOrDefault(x => x.Attribute("key").Value == key);
@@ -76,6 +76,36 @@ namespace TelegramBotTranslations
             var strings = file.Descendants("string").FirstOrDefault(x => x.Attribute("key").Value == key);
             var values = strings.Descendants("value");
             return values.First().Value;
+        }
+
+        /// <summary>
+        /// Get an unformatted string, without any arguments. The {#}'s will be as they are in the XML file.
+        /// </summary>
+        /// <param name="key">The key of the string to get.</param>
+        /// <param name="language">The language to get the key in.</param>
+        /// <returns>the unformatted string, without any arguments. The {#}'s will be as they are in the XML file</returns>
+        public string GetRawString(string key, string language)
+        {
+            var lang = Languages.FirstOrDefault(x => x.Key == language).Value.Doc ?? Master;
+
+            var str = lang.Descendants("string").FirstOrDefault(x => x.Attribute("key").Value == key)
+                ?? Master.Descendants("string").FirstOrDefault(x => x.Attribute("key").Value == key);
+
+            if (str == null)
+            {
+                throw new NoStringException(key, language);
+            }
+
+            var values = str.Descendants("value");
+            if (values.Count() == 0)
+            {
+                throw new NoValuesException(key, language);
+            }
+
+            var vals = values.Select(x => x.Value).ToList();
+            var val = vals[new Random().Next(vals.Count)];
+
+            return val;
         }
     }
 }

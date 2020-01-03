@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TelegramBotTranslations.Models;
+﻿using TelegramBotTranslations.Models;
 
 namespace TelegramBotTranslations
 {
@@ -14,10 +9,10 @@ namespace TelegramBotTranslations
             switch (parseMode)
             {
                 case ParseMode.Markdown:
-                    return $"*{str}*";
+                    return $"*{str.FormatMarkdown()}*";
 
                 case ParseMode.Html:
-                    return $"<b>{str}</b>";
+                    return $"<b>{str.FormatHTML()}</b>";
 
                 case ParseMode.Default:
                 default:

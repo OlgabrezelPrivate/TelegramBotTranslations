@@ -2,13 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Xml.Linq;
-using TelegramBotTranslations.Models;
-using File = TelegramBotTranslations.Models.File;
 
 namespace TelegramBotTranslations
 {
@@ -17,35 +11,52 @@ namespace TelegramBotTranslations
         /// <summary>
         /// Downloads the file to the temporary language folder and validates it against the current master file.
         /// </summary>
-        /// <param name="FileId"></param>
-        /// <param name="FileName"></param>
-        /// <param name="CanUpload"></param>
+        /// <param name="FileId">The file_id of the file that should be uploaded.</param>
+        /// <param name="FileName">The file_name of the file that should be uploaded.</param>
+        /// <param name="CanUpload">Whether the file can be uploaded like this or not. If strictErrors is enabled, it's only true if there are no errors, else it's true if there are no fatal errors.</param>
         /// <returns>Returns a string with the validation results, the given parse mode will be applied to it.</returns>
         public string PrepareUploadLanguage(string FileId, string FileName, out bool CanUpload)
         {
-            if (FileId == null) throw new ArgumentNullException(nameof(FileId));
-            if (FileName == null) throw new ArgumentNullException(nameof(FileName));
+            CanUpload = false;
+            if (FileId == null) throw new ArgumentNullException("FileId");
+            if (FileName == null) throw new ArgumentNullException("FileName");
 
-            CanUpload = true;
-
-            var file = File.GetFile(BotToken, FileId);
-            
-            var uri = $"https://api.telegram.org/file/bot{BotToken}/{file.FilePath}";
             var newFilePath = Path.Combine(TempPath, FileName);
-            using (var client = new WebClient())
+
+            try
             {
-                client.DownloadFile(new Uri(uri), newFilePath);
+                Api.DownloadFile(FileId, newFilePath);
+            }
+            catch (Exception e)
+            {
+                string message = "Exception occured while trying to download the file:".ToBold(Parsemode) + "\n\n";
+
+                do
+                {
+                    message += e.Message;
+                    e = e.InnerException;
+                }
+                while (e != null);
+                return message;
             }
 
+            try
+            {
+                XDocument.Load(newFilePath);
+            }
+            catch (System.Xml.XmlException xe)
+            {
+                return $"Can't parse file {FileName}:".ToBold(Parsemode) + "\n" + xe.Message;
+            }
 
             //ok, we have the file.  Now we need to determine the language, scan it and the original file.
             var newFileErrors = new List<LanguageError>();
             //first, reload existing files to program
             ReloadLanguages();
 
-            var langs = Languages.Select(x => x.Value);
+            var langs = Languages.Select(x => new LangFile(x.Key, x.Value, TempPath));
             var master = Master;
-            var newFile = new Language(newFilePath);
+            var newFile = new LangFile(newFilePath);
 
             //make sure it has a complete langnode
             CheckLanguageNode(newFile, newFileErrors);
@@ -68,12 +79,6 @@ namespace TelegramBotTranslations
             //get the errors in it
             GetFileErrors(newFile, newFileErrors, master);
 
-            if (newFileErrors.Any(x => x.Level == ErrorLevel.FatalError) ||
-                (StrictErrors && newFileErrors.Any(x => x.Level == ErrorLevel.Error)))
-            {
-                CanUpload = false;
-            }
-
             //need to get the current file
             var curFile = langs.FirstOrDefault(x => x.FileName == newFile.FileName);
             var curFileErrors = new List<LanguageError>();
@@ -87,12 +92,15 @@ namespace TelegramBotTranslations
                 GetFileErrors(curFile, curFileErrors, master);
             }
 
+            if (StrictErrors) CanUpload = newFileErrors.Count == 0; //For strict error handling, the file may only be uploaded if there are no errors
+            else CanUpload = newFileErrors.All(x => x.Level != ErrorLevel.FatalError); //For normal handling, the file can always be uploaded if no fatal errors are present
+
             //return the validation result
-            return OutputResult(newFile, newFileErrors, curFile, curFileErrors, CanUpload, Parsemode);
+            return OutputResult(newFile, newFileErrors, curFile, curFileErrors);
         }
 
         /// <summary>
-        /// Upload a language. The language must have been prepared with <see cref="PrepareUploadLanguage(string, string, out bool)"/> before.
+        /// Move a language to the folder and use it. The language must have been prepared with <see cref="PrepareUploadLanguage(string, string, out bool)"/> before.
         /// </summary>
         /// <param name="fileName">The language to be uploaded.</param>
         /// <returns>Returns a message about the status of the uploading, in the given parse mode.</returns>
@@ -116,7 +124,7 @@ namespace TelegramBotTranslations
                 };
 
                 //check for existing file
-                var langs = Directory.GetFiles(FilesPath).Select(x => new Language(x)).ToList();
+                var langs = Directory.GetFiles(FilesPath).Select(x => new LangFile(x)).ToList();
                 var lang = langs.FirstOrDefault(x => x.FileName == fileName);
                 if (lang != null)
                 {
@@ -134,11 +142,11 @@ namespace TelegramBotTranslations
                 }
 
 
-                System.IO.File.Copy(newFilePath, copyToPath, true);
+                File.Copy(newFilePath, copyToPath, true);
                 msg += "File copied to bot.\n";
                 ReloadLanguages();
-                msg += "Language files refreshed.\n";
-                msg += "\n" + "Operation complete.".ToBold(Parsemode);
+                msg += "Language files refreshed.\n\n";
+                msg += "Operation complete.".ToBold(Parsemode);
                 return msg;
             }
             catch

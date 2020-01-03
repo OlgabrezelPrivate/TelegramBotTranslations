@@ -1,51 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Xml.Linq;
-
-namespace TelegramBotTranslations.Models
+﻿namespace TelegramBotTranslations.Models
 {
     /// <summary>
     /// Represents a language file
     /// </summary>
-    public class Language
+    public sealed class Language
     {
         /// <summary>
         /// The language's base as in the XML file
         /// </summary>
-        public string Base { get; set; }
+        public string Base { get; }
         /// <summary>
         /// The language's variant as in the XML file
         /// </summary>
-        public string Variant { get; set; }
+        public string Variant { get; }
         /// <summary>
         /// The file name of the XML file
         /// </summary>
-        public string FileName { get; set; }
-        internal XDocument Doc { get; set; }
+        public string FileName { get; }
         /// <summary>
-        /// The time when the language file was updated the last time
+        /// The language's IETF code
         /// </summary>
-        public DateTime LatestUpdate { get; }
+        public string LangCode { get; }
 
-        internal Language(string path)
+        internal Language(string Base, string Variant, string FileName, string LangCode)
         {
-            Doc = XDocument.Load(path);
-            Base = Doc.Descendants("language").First().Attribute("base")?.Value;
-            Variant = Doc.Descendants("language").First().Attribute("variant")?.Value;
-            FileName = Path.GetFileNameWithoutExtension(path);
-            LatestUpdate = System.IO.File.GetLastWriteTimeUtc(path);
-        }
-
-        internal Language(string xmlName, XDocument xmlDoc, string tempPath)
-        {
-            Doc = xmlDoc;
-            Base = Doc.Descendants("language").First().Attribute("base")?.Value;
-            Variant = Doc.Descendants("language").First().Attribute("variant")?.Value;
-            FileName = xmlName;
-            LatestUpdate = System.IO.File.GetLastWriteTimeUtc(Path.Combine(tempPath, xmlName, ".xml"));
+            this.Base = Base;
+            this.Variant = Variant;
+            this.FileName = FileName;
+            this.LangCode = LangCode;
         }
     }
 }

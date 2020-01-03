@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>3.1.0</Version>
+    <Version>3.1.1</Version>
     <Authors>Olgabrezel</Authors>
     <Product />
     <Company>TelegramBotTranslations</Company>
@@ -13,7 +13,7 @@
     <PackageReleaseNotes>Made the library compatible with .NET Standard :)</PackageReleaseNotes>
     <Copyright></Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Description>Made the project independent of Telegram.Bot *again* and provide all the methods from version 2.0.5</Description>
+    <Description>I found my old code again and made it work again. *tried noises*</Description>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

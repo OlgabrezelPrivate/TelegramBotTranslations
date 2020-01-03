@@ -1,0 +1,108 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>TelegramBotTranslations</name>
+    </assembly>
+    <members>
+        <member name="T:TelegramBotTranslations.Exceptions.NoStringException">
+            <summary>
+            The <see cref="T:System.Exception"/> that is thrown when a string that's attempted to be got doesn't exist
+            </summary>
+        </member>
+        <member name="P:TelegramBotTranslations.Exceptions.NoStringException.Key">
+            <summary>
+            The key of the missing string
+            </summary>
+        </member>
+        <member name="P:TelegramBotTranslations.Exceptions.NoStringException.Language">
+            <summary>
+            The file name of the language in which the string was attempted to be got
+            </summary>
+        </member>
+        <member name="T:TelegramBotTranslations.Exceptions.NoValuesException">
+            <summary>
+            The <see cref="T:System.Exception"/> that is thrown when a string has no value
+            </summary>
+        </member>
+        <member name="P:TelegramBotTranslations.Exceptions.NoValuesException.Key">
+            <summary>
+            The key of the string that has no value
+            </summary>
+        </member>
+        <member name="P:TelegramBotTranslations.Exceptions.NoValuesException.Language">
+            <summary>
+            The file name of the language in which that string was attempted to get
+            </summary>
+        </member>
+        <member name="T:TelegramBotTranslations.Exceptions.StringFormattingException">
+            <summary>
+            The <see cref="T:System.Exception"/> that is thrown when a string couldn't be formatted with the given arguments
+            </summary>
+        </member>
+        <member name="P:TelegramBotTranslations.Exceptions.StringFormattingException.Key">
+            <summary>
+            The Key of the string that was attempted to be formatted
+            </summary>
+        </member>
+        <member name="P:TelegramBotTranslations.Exceptions.StringFormattingException.Language">
+            <summary>
+            The file name of the Language in which the string was got
+            </summary>
+        </member>
+        <member name="P:TelegramBotTranslations.Exceptions.StringFormattingException.Arguments">
+            <summary>
+            The arguments that were passed and couldn't be formatted in that string.
+            </summary>
+        </member>
+        <member name="T:TelegramBotTranslations.BotTranslationManager">
+            <summary>
+            The main class. Use a static <see cref="T:TelegramBotTranslations.BotTranslationManager"/> and call its functions for the translations.
+            </summary>
+        </member>
+        <member name="M:TelegramBotTranslations.BotTranslationManager.GetTranslation(System.String,System.String,System.Object[])">
+            <summary>
+            Get the translation of a string in a certain language.
+            </summary>
+            <param name="key">The key of the string to get.</param>
+            <param name="language">The language to get the key in.</param>
+            <param name="arguments">The arguments that the string will be formatted with. Every {#} inside the string will be replaced by arguments[#]</param>
+            <returns></returns>
+        </member>
+        <member name="M:TelegramBotTranslations.BotTranslationManager.#ctor(System.String,System.String,System.String,System.String,Telegram.Bot.Types.Enums.ParseMode)">
+            <summary>
+            Create a new manager for translations.
+            </summary>
+            <param name="botToken">The token of your telegram bot. It's required to download the files that are supposed to be uploaded. See https://core.telegram.org/bots/api#getfile for more information.</param>
+            <param name="filesPath">The path to save the used files to. Must be an existing directory the program has read and write access to.</param>
+            <param name="tempPath">The path to save the temporary files to. Must be an existing directory the program has read and write access to.</param>
+            <param name="masterFileName">Name of the master file (without file extension!). If a string is missing or cannot be formatted in a translation, the corresponding string from the master file will be used instead, and when uploading a language, it's validated against the current master file.</param>
+            <param name="parsemode">The parse mode that your bot sends messages with. Methods that return strings for your bot to send will give the strings in this parse mode.</param>
+        </member>
+        <member name="M:TelegramBotTranslations.BotTranslationManager.ReloadLanguages">
+            <summary>
+            Update the language files from the directory. Can be called after manual changes to the directory, doesn't need to be called after uploading a file through the <see cref="M:TelegramBotTranslations.BotTranslationManager.PrepareUploadLanguage(Telegram.Bot.Types.Document)"/> and <see cref="M:TelegramBotTranslations.BotTranslationManager.UploadLanguage(System.String)"/> methods.
+            </summary>
+        </member>
+        <member name="M:TelegramBotTranslations.BotTranslationManager.PrepareUploadLanguage(Telegram.Bot.Types.Document)">
+            <summary>
+            Downloads the file to the temporary language folder and validates it against the current master file.
+            </summary>
+            <param name="document">The document message containing the file that should be uploaded.</param>
+            <returns>Returns a string with the validation results, the given parse mode will be applied to it.</returns>
+        </member>
+        <member name="M:TelegramBotTranslations.BotTranslationManager.UploadLanguage(System.String)">
+            <summary>
+            Upload a language. The language must have been prepared with <see cref="M:TelegramBotTranslations.BotTranslationManager.PrepareUploadLanguage(Telegram.Bot.Types.Document)"/> before.
+            </summary>
+            <param name="fileName">The language to be uploaded.</param>
+            <returns>Returns a message about the status of the uploading, in the given parse mode.</returns>
+        </member>
+        <member name="M:TelegramBotTranslations.BotTranslationManager.ValidateLanguage(System.String)">
+            <summary>
+            Validate an already existing language file.
+            </summary>
+            <param name="language">The language file to be validated.</param>
+            <returns>Returns the validation results in the given parse mode.</returns>
+        </member>
+    </members>
+</doc>

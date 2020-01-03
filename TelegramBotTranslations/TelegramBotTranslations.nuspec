@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <projectUrl>https://github.com/Olgabrezel/TelegramBotTranslations</projectUrl>
+    <description>$description$</description>
+    <releaseNotes>Made the library compatible with .NET Standard :)</releaseNotes>
+    <copyright>Copyright 2020</copyright>
+    <tags>Telegram Bot Translation TelegramBot Locales</tags>
+  </metadata>
+  <files>
+    <file src="bin\Release\netstandard2.0\TelegramBotTranslations.dll" target="lib\netstandard2.0\TelegramBotTranslations.dll" />
+    <file src="bin\Release\netstandard2.0\TelegramBotTranslations.xml" target="lib\netstandard2.0\TelegramBotTranslations.xml" />
+  </files>
+</package>
